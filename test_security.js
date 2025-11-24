@@ -1,7 +1,9 @@
 const http = require('http');
 
 const postData = JSON.stringify({
-    message: 'Hello, this is a test message.'
+    messages: [
+        { role: 'user', content: 'Hello, this is a test message.' }
+    ]
 });
 
 const options = {
@@ -45,8 +47,8 @@ async function runTests() {
     }
 
     console.log('\n--- Testing Input Validation (Expect 400) ---');
-    const longMessage = 'a'.repeat(1001);
-    const longData = JSON.stringify({ message: longMessage });
+    const longMessage = 'a'.repeat(5001);
+    const longData = JSON.stringify({ messages: [{ role: 'user', content: longMessage }] });
     const longOptions = { ...options, headers: { ...options.headers, 'Content-Length': Buffer.byteLength(longData) } };
 
     const req = http.request(longOptions, (res) => {

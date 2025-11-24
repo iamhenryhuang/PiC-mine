@@ -2,8 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Cpu, Bot, User, Loader2 } from 'lucide-react';
+import { Send, Cpu, Bot, User, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
     id: string;
@@ -13,17 +15,40 @@ interface Message {
 }
 
 export default function ChatInterface() {
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: 'welcome',
-            role: 'assistant',
-            content: "你好！我是 PiC mine。我可以協助你打造夢想中的電腦。請告訴我你的預算、用途（例如遊戲、工作等），以及任何特殊偏好！",
-            timestamp: Date.now(),
-        },
-    ]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Load messages from localStorage on mount
+    useEffect(() => {
+        const savedMessages = localStorage.getItem('pic_mine_history');
+        if (savedMessages) {
+            try {
+                setMessages(JSON.parse(savedMessages));
+            } catch (e) {
+                console.error('Failed to parse history', e);
+            }
+        } else {
+            // Initial welcome message
+            setMessages([
+                {
+                    id: 'welcome',
+                    role: 'assistant',
+                    content: "你好！我是 PiC mine。我可以協助你打造夢想中的電腦。請告訴我你的預算、用途（例如遊戲、工作等），以及任何特殊偏好！",
+                    timestamp: Date.now(),
+                },
+            ]);
+        }
+    }, []);
+
+    // Save messages to localStorage whenever they change
+    useEffect(() => {
+        if (messages.length > 0) {
+            localStorage.setItem('pic_mine_history', JSON.stringify(messages));
+        }
+    }, [messages]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -31,10 +56,24 @@ export default function ChatInterface() {
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, isLoading]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const clearHistory = () => {
+        if (confirm('確定要清除所有對話紀錄嗎？')) {
+            const initialMessage: Message = {
+                id: 'welcome',
+                role: 'assistant',
+                content: "你好！我是 PiC mine。我可以協助你打造夢想中的電腦。請告訴我你的預算、用途（例如遊戲、工作等），以及任何特殊偏好！",
+                timestamp: Date.now(),
+            };
+            setMessages([initialMessage]);
+            localStorage.removeItem('pic_mine_history');
+            setError(null);
+        }
+    };
+
+    const handleSubmit = async (e?: React.FormEvent) => {
+        e?.preventDefault();
         if (!input.trim() || isLoading) return;
 
         const userMessage: Message = {
@@ -44,20 +83,27 @@ export default function ChatInterface() {
             timestamp: Date.now(),
         };
 
-        setMessages((prev) => [...prev, userMessage]);
+        const newMessages = [...messages, userMessage];
+        setMessages(newMessages);
         setInput('');
         setIsLoading(true);
+        setError(null);
 
         try {
+            // Prepare messages for API (exclude id and timestamp)
+            const apiMessages = newMessages.map(({ role, content }) => ({ role, content }));
+
             const response = await fetch('/api/recommend', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userMessage.content }),
+                body: JSON.stringify({ messages: apiMessages }),
             });
 
-            if (!response.ok) throw new Error('Failed to get response');
-
             const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to get response');
+            }
 
             const botMessage: Message = {
                 id: (Date.now() + 1).toString(),
@@ -67,31 +113,80 @@ export default function ChatInterface() {
             };
 
             setMessages((prev) => [...prev, botMessage]);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
-            const errorMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                role: 'assistant',
-                content: "抱歉，處理您的請求時發生錯誤。請再試一次。",
-                timestamp: Date.now(),
-            };
-            setMessages((prev) => [...prev, errorMessage]);
+            setError(error.message || "抱歉，處理您的請求時發生錯誤。");
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleRetry = async () => {
+        if (isLoading || messages.length === 0) return;
+
+        // Remove the last error message if it exists (not implemented here as we store error in state)
+        // Just retry the last user message context
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const apiMessages = messages.map(({ role, content }) => ({ role, content }));
+
+            const response = await fetch('/api/recommend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: apiMessages }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to get response');
+            }
+
+            const botMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                role: 'assistant',
+                content: data.reply,
+                timestamp: Date.now(),
+            };
+
+            setMessages((prev) => [...prev, botMessage]);
+        } catch (error: any) {
+            console.error('Error:', error);
+            setError(error.message || "重試失敗，請稍後再試。");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit();
         }
     };
 
     return (
         <div className="flex flex-col h-[80vh] w-full max-w-4xl mx-auto glass-card rounded-2xl overflow-hidden relative">
             {/* Header */}
-            <div className="p-4 border-b border-white/10 flex items-center gap-3 bg-black/20">
-                <div className="p-2 rounded-lg bg-primary/20">
-                    <Cpu className="w-6 h-6 text-primary" />
+            <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/20">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/20">
+                        <Cpu className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                        <h2 className="font-bold text-lg text-white">PiC mine Agent</h2>
+                        <p className="text-xs text-zinc-400">AI 電腦組裝助理</p>
+                    </div>
                 </div>
-                <div>
-                    <h2 className="font-bold text-lg text-white">PiC mine Agent</h2>
-                    <p className="text-xs text-zinc-400">AI 電腦組裝助理</p>
-                </div>
+                <button
+                    onClick={clearHistory}
+                    className="p-2 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                    title="清除對話紀錄"
+                >
+                    <Trash2 size={18} />
+                </button>
             </div>
 
             {/* Messages Area */}
@@ -102,10 +197,8 @@ export default function ChatInterface() {
                             key={message.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.3 }}
                             className={cn(
-                                "flex gap-3 max-w-[80%]",
+                                "flex gap-3 max-w-[90%] md:max-w-[80%]",
                                 message.role === 'user' ? "ml-auto flex-row-reverse" : "mr-auto"
                             )}
                         >
@@ -117,12 +210,32 @@ export default function ChatInterface() {
                             </div>
 
                             <div className={cn(
-                                "p-4 rounded-2xl text-sm leading-relaxed",
+                                "p-4 rounded-2xl text-sm leading-relaxed overflow-hidden",
                                 message.role === 'user'
                                     ? "bg-blue-600/20 border border-blue-500/20 text-blue-50 rounded-tr-none"
                                     : "bg-zinc-800/50 border border-white/5 text-zinc-100 rounded-tl-none"
                             )}>
-                                <div className="whitespace-pre-wrap">{message.content}</div>
+                                {message.role === 'user' ? (
+                                    <div className="whitespace-pre-wrap">{message.content}</div>
+                                ) : (
+                                    <div className="markdown-body">
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                table: ({ node, ...props }) => <div className="overflow-x-auto my-2"><table className="w-full border-collapse border border-zinc-700" {...props} /></div>,
+                                                th: ({ node, ...props }) => <th className="border border-zinc-700 bg-zinc-800/50 p-2 text-left" {...props} />,
+                                                td: ({ node, ...props }) => <td className="border border-zinc-700 p-2" {...props} />,
+                                                ul: ({ node, ...props }) => <ul className="list-disc list-inside my-2" {...props} />,
+                                                ol: ({ node, ...props }) => <ol className="list-decimal list-inside my-2" {...props} />,
+                                                li: ({ node, ...props }) => <li className="my-1" {...props} />,
+                                                p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                                                strong: ({ node, ...props }) => <strong className="text-primary font-bold" {...props} />,
+                                            }}
+                                        >
+                                            {message.content}
+                                        </ReactMarkdown>
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     ))}
@@ -143,6 +256,24 @@ export default function ChatInterface() {
                         </div>
                     </motion.div>
                 )}
+
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex flex-col items-center gap-2 p-4"
+                    >
+                        <p className="text-red-400 text-sm">{error}</p>
+                        <button
+                            onClick={handleRetry}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors text-sm"
+                        >
+                            <RefreshCw size={14} />
+                            重試
+                        </button>
+                    </motion.div>
+                )}
+
                 <div ref={messagesEndRef} />
             </div>
 
@@ -153,6 +284,7 @@ export default function ChatInterface() {
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
                         placeholder="我想組一台玩 2077 的電腦，預算 4 萬..."
                         className="flex-1 bg-zinc-900/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
                         disabled={isLoading}
@@ -165,6 +297,9 @@ export default function ChatInterface() {
                         <Send size={18} />
                     </button>
                 </form>
+                <p className="text-center text-[10px] text-zinc-600 mt-2">
+                    按 Enter 發送
+                </p>
             </div>
         </div>
     );
