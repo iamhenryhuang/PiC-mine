@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Cpu, Bot, User, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import { Send, Cpu, Bot, User, Loader2, RefreshCw, Trash2, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -124,8 +124,6 @@ export default function ChatInterface() {
     const handleRetry = async () => {
         if (isLoading || messages.length === 0) return;
 
-        // Remove the last error message if it exists (not implemented here as we store error in state)
-        // Just retry the last user message context
         setIsLoading(true);
         setError(null);
 
@@ -198,44 +196,49 @@ export default function ChatInterface() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             className={cn(
-                                "flex gap-3 max-w-[90%] md:max-w-[80%]",
-                                message.role === 'user' ? "ml-auto flex-row-reverse" : "mr-auto"
+                                "flex flex-col gap-2 max-w-[90%] md:max-w-[80%]",
+                                message.role === 'user' ? "ml-auto items-end" : "mr-auto items-start"
                             )}
                         >
                             <div className={cn(
-                                "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
-                                message.role === 'user' ? "bg-blue-500/20 text-blue-400" : "bg-primary/20 text-primary"
+                                "flex gap-3",
+                                message.role === 'user' ? "flex-row-reverse" : ""
                             )}>
-                                {message.role === 'user' ? <User size={16} /> : <Bot size={16} />}
-                            </div>
+                                <div className={cn(
+                                    "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+                                    message.role === 'user' ? "bg-blue-500/20 text-blue-400" : "bg-primary/20 text-primary"
+                                )}>
+                                    {message.role === 'user' ? <User size={16} /> : <Bot size={16} />}
+                                </div>
 
-                            <div className={cn(
-                                "p-4 rounded-2xl text-sm leading-relaxed overflow-hidden",
-                                message.role === 'user'
-                                    ? "bg-blue-600/20 border border-blue-500/20 text-blue-50 rounded-tr-none"
-                                    : "bg-zinc-800/50 border border-white/5 text-zinc-100 rounded-tl-none"
-                            )}>
-                                {message.role === 'user' ? (
-                                    <div className="whitespace-pre-wrap">{message.content}</div>
-                                ) : (
-                                    <div className="markdown-body">
-                                        <ReactMarkdown
-                                            remarkPlugins={[remarkGfm]}
-                                            components={{
-                                                table: ({ node, ...props }) => <div className="overflow-x-auto my-2"><table className="w-full border-collapse border border-zinc-700" {...props} /></div>,
-                                                th: ({ node, ...props }) => <th className="border border-zinc-700 bg-zinc-800/50 p-2 text-left" {...props} />,
-                                                td: ({ node, ...props }) => <td className="border border-zinc-700 p-2" {...props} />,
-                                                ul: ({ node, ...props }) => <ul className="list-disc list-inside my-2" {...props} />,
-                                                ol: ({ node, ...props }) => <ol className="list-decimal list-inside my-2" {...props} />,
-                                                li: ({ node, ...props }) => <li className="my-1" {...props} />,
-                                                p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
-                                                strong: ({ node, ...props }) => <strong className="text-primary font-bold" {...props} />,
-                                            }}
-                                        >
-                                            {message.content}
-                                        </ReactMarkdown>
-                                    </div>
-                                )}
+                                <div className={cn(
+                                    "p-4 rounded-2xl text-sm leading-relaxed overflow-hidden",
+                                    message.role === 'user'
+                                        ? "bg-blue-600/20 border border-blue-500/20 text-blue-50 rounded-tr-none"
+                                        : "bg-zinc-800/50 border border-white/5 text-zinc-100 rounded-tl-none"
+                                )}>
+                                    {message.role === 'user' ? (
+                                        <div className="whitespace-pre-wrap">{message.content}</div>
+                                    ) : (
+                                        <div className="markdown-body">
+                                            <ReactMarkdown
+                                                remarkPlugins={[remarkGfm]}
+                                                components={{
+                                                    table: ({ node, ...props }) => <div className="overflow-x-auto my-2"><table className="w-full border-collapse border border-zinc-700" {...props} /></div>,
+                                                    th: ({ node, ...props }) => <th className="border border-zinc-700 bg-zinc-800/50 p-2 text-left" {...props} />,
+                                                    td: ({ node, ...props }) => <td className="border border-zinc-700 p-2" {...props} />,
+                                                    ul: ({ node, ...props }) => <ul className="list-disc list-inside my-2" {...props} />,
+                                                    ol: ({ node, ...props }) => <ol className="list-decimal list-inside my-2" {...props} />,
+                                                    li: ({ node, ...props }) => <li className="my-1" {...props} />,
+                                                    p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                                                    strong: ({ node, ...props }) => <strong className="text-primary font-bold" {...props} />,
+                                                }}
+                                            >
+                                                {message.content}
+                                            </ReactMarkdown>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </motion.div>
                     ))}
@@ -301,6 +304,7 @@ export default function ChatInterface() {
                     按 Enter 發送
                 </p>
             </div>
+
         </div>
     );
 }

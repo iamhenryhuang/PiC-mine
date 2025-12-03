@@ -21,6 +21,9 @@
   --color-input: hsl(240 3.7% 15.9%);
   --color-ring: hsl(240 4.9% 83.9%);
 
+  --color-neon-red: hsl(0 100% 63%);
+  --color-cyber-blue: hsl(190 100% 50%);
+
   --radius: 0.75rem;
 }
 
@@ -40,10 +43,28 @@
   }
 
   .text-gradient {
-    background: linear-gradient(to right, #c084fc, #6366f1);
+    background: linear-gradient(to right, var(--color-neon-red), var(--color-cyber-blue));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  .glow-red {
+    box-shadow: 0 0 10px var(--color-neon-red), 0 0 20px rgba(255, 0, 0, 0.3);
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 10px var(--color-cyber-blue), 0 0 20px rgba(0, 255, 255, 0.3);
+  }
+
+  .border-glow-red {
+    border-color: var(--color-neon-red);
+    box-shadow: 0 0 10px var(--color-neon-red) inset;
+  }
+
+  .border-glow-blue {
+    border-color: var(--color-cyber-blue);
+    box-shadow: 0 0 10px var(--color-cyber-blue) inset;
   }
 }
 
