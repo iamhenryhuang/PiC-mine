@@ -1,74 +1,71 @@
 # PiC mine
 
-AI 電腦組裝助手，根據預算跟用途推薦零件配置。
+PC building assistant that recommends parts based on budget and usage.
 
-## 功能
+## Features
 
-- 對話式 AI 推薦（GPT-4o-mini）
-- 預算充分利用（85-100%）
-- 多用途配置平衡（遊戲+深度學習+剪片）
-- 自動相容性檢查
-- Markdown 格式回應
-- 對話記錄保存
+- Chat-based recommendations using GPT-4o-mini
+- Budget optimization (85-100% utilization)
+- Multi-purpose configuration balancing
+- Compatibility checking
+- Markdown formatted responses
+- Conversation history saved locally
 
-## 技術
+## Tech Stack
 
-Next.js 16、TypeScript、Tailwind CSS 4、OpenAI API、Framer Motion
+Next.js 16, TypeScript, Tailwind CSS 4, OpenAI API, Framer Motion
 
-## 安裝
+## Setup
 
+Install dependencies:
 ```bash
 npm install
 ```
 
-設定 `.env.local`:
+Create `.env.local`:
 ```
 OPENAI_API_KEY=your_key_here
 ```
 
-啟動:
+Run dev server:
 ```bash
 npm run dev
 ```
 
-開啟 http://localhost:3000
+Open http://localhost:3000
 
-## 專案結構
+## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── api/recommend/      # OpenAI API 路由
+│   ├── api/recommend/      # API route
 │   ├── layout.tsx
 │   └── page.tsx
 ├── components/
-│   └── ChatInterface.tsx   # 主聊天介面
+│   └── ChatInterface.tsx
 └── lib/
     └── utils.ts
 ```
 
-## 使用
+## Usage
 
-輸入需求，例如：
-- "預算 5 萬組遊戲電腦"
-- "深度學習工作站，10 萬預算"
-- "剪片+遊戲，預算 8 萬"
+Enter your requirements, for example:
+- "Gaming PC with 50k budget"
+- "Deep learning workstation, 100k budget"
+- "Video editing + gaming, 80k budget"
 
-AI 會推薦完整零件清單：
-- 零件規格與價格
-- 設計思路與理由
-- 相容性檢查
-- 升降級建議
+The AI will recommend a complete parts list with specs, prices, compatibility checks, and upgrade suggestions.
 
 ## Rate Limiting
 
-每個 IP 每分鐘限制 5 次請求，對話長度上限 5000 字元。
+5 requests per minute per IP. Conversation length limit: 5000 characters.
 
-## 指令
+## Commands
 
 ```bash
-npm run dev      # 開發
-npm run build    # 建置
-npm start        # 生產
-npm run lint     # 檢查
+npm run dev      # Development
+npm run build    # Build
+npm start        # Production
+npm run lint     # Lint
 ```
