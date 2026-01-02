@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Cpu, Bot, User, Loader2, RefreshCw, Trash2, BarChart3 } from 'lucide-react';
+import { Send, Terminal, Activity, ChevronRight, AlertCircle, Command, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -31,12 +31,12 @@ export default function ChatInterface() {
                 console.error('Failed to parse history', e);
             }
         } else {
-            // Initial welcome message
+            // Initial SYSTEM message
             setMessages([
                 {
-                    id: 'welcome',
+                    id: 'init',
                     role: 'assistant',
-                    content: "你好！我是 PiC mine。我可以協助你打造夢想中的電腦。請告訴我你的預算、用途（例如遊戲、工作等），以及任何特殊偏好！",
+                    content: "> SYSTEM INITIALIZED.\n> AWAITING CONFIGURATION PARAMETERS.\n> PLEASE INPUT BUDGET AND USAGE SCENARIO.",
                     timestamp: Date.now(),
                 },
             ]);
@@ -59,11 +59,11 @@ export default function ChatInterface() {
     }, [messages, isLoading]);
 
     const clearHistory = () => {
-        if (confirm('確定要清除所有對話紀錄嗎？')) {
+        if (confirm('PURGE SYSTEM LOGS?')) {
             const initialMessage: Message = {
-                id: 'welcome',
+                id: 'init',
                 role: 'assistant',
-                content: "你好！我是 PiC mine。我可以協助你打造夢想中的電腦。請告訴我你的預算、用途（例如遊戲、工作等），以及任何特殊偏好！",
+                content: "> SYSTEM LOGS PURGED.\n> READY FOR NEW SESSION.",
                 timestamp: Date.now(),
             };
             setMessages([initialMessage]);
@@ -102,7 +102,7 @@ export default function ChatInterface() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to get response');
+                throw new Error(data.error || 'Connection Failed');
             }
 
             const botMessage: Message = {
@@ -115,7 +115,7 @@ export default function ChatInterface() {
             setMessages((prev) => [...prev, botMessage]);
         } catch (error: any) {
             console.error('Error:', error);
-            setError(error.message || "抱歉，處理您的請求時發生錯誤。");
+            setError(error.message || "SYSTEM ERROR: EXECUTION FAILED.");
         } finally {
             setIsLoading(false);
         }
@@ -139,7 +139,7 @@ export default function ChatInterface() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to get response');
+                throw new Error(data.error || 'Connection Failed');
             }
 
             const botMessage: Message = {
@@ -152,7 +152,7 @@ export default function ChatInterface() {
             setMessages((prev) => [...prev, botMessage]);
         } catch (error: any) {
             console.error('Error:', error);
-            setError(error.message || "重試失敗，請稍後再試。");
+            setError(error.message || "RETRY FAILED.");
         } finally {
             setIsLoading(false);
         }
@@ -166,72 +166,74 @@ export default function ChatInterface() {
     };
 
     return (
-        <div className="flex flex-col h-[80vh] w-full max-w-4xl mx-auto glass-card rounded-2xl overflow-hidden relative">
-            {/* Header */}
-            <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/20">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/20">
-                        <Cpu className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                        <h2 className="font-bold text-lg text-white">PiC mine Agent</h2>
-                        <p className="text-xs text-zinc-400">AI 電腦組裝助理</p>
-                    </div>
+        <div className="flex flex-col h-full w-full max-w-5xl mx-auto liquid-glass rounded-sm overflow-hidden relative shadow-2xl ring-1 ring-white/10 font-mono text-sm md:text-base border-x border-white/5">
+
+            {/* Scanline Effect */}
+            <div className="scanline"></div>
+
+            {/* System Status Bar */}
+            <div className="flex items-center justify-between px-4 py-2 bg-black/40 border-b border-white/10 text-xs text-primary/60 tracking-widest uppercase select-none">
+                <div className="flex items-center gap-4">
+                    <span className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                        SYS_ONLINE
+                    </span>
+                    <span>MEM: 64TB</span>
+                    <span>CPU: ODYSSEY_X</span>
                 </div>
-                <button
-                    onClick={clearHistory}
-                    className="p-2 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors"
-                    title="清除對話紀錄"
-                >
-                    <Trash2 size={18} />
-                </button>
+                <div className="flex items-center gap-4">
+                    <span>NET: SECURE</span>
+                    <button onClick={clearHistory} className="hover:text-red-400 transition-colors">[PURGE_LOGS]</button>
+                </div>
             </div>
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+            {/* Terminal Output Stream */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-1 font-mono text-zinc-300 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+
+                {/* Boot Sequence / Init Message */}
+                <div className="mb-6 text-zinc-500 text-xs">
+                    <p>&gt; BOOT_SEQUENCE_INITIATED...</p>
+                    <p>&gt; LOADING_MODULES: [CORE] [PC_BUILDER] [MARKET_ANALYSIS]... OK</p>
+                    <p>&gt; ESTABLISHING_UPLINK... CONNECTED</p>
+                </div>
+
                 <AnimatePresence initial={false}>
                     {messages.map((message) => (
                         <motion.div
                             key={message.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className={cn(
-                                "flex flex-col gap-2 max-w-[90%] md:max-w-[80%]",
-                                message.role === 'user' ? "ml-auto items-end" : "mr-auto items-start"
-                            )}
+                            initial={{ opacity: 0, x: -5 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="flex flex-col gap-1 py-1"
                         >
-                            <div className={cn(
-                                "flex gap-3",
-                                message.role === 'user' ? "flex-row-reverse" : ""
-                            )}>
-                                <div className={cn(
-                                    "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
-                                    message.role === 'user' ? "bg-blue-500/20 text-blue-400" : "bg-primary/20 text-primary"
+                            <div className="flex gap-3">
+                                <span className={cn(
+                                    "shrink-0 font-bold select-none",
+                                    message.role === 'user' ? "text-green-400" : "text-purple-400"
                                 )}>
-                                    {message.role === 'user' ? <User size={16} /> : <Bot size={16} />}
-                                </div>
+                                    {message.role === 'user' ? "root@user:~$" : "[SYSTEM_CORE]:"}
+                                </span>
 
                                 <div className={cn(
-                                    "p-4 rounded-2xl text-sm leading-relaxed overflow-hidden",
-                                    message.role === 'user'
-                                        ? "bg-blue-600/20 border border-blue-500/20 text-blue-50 rounded-tr-none"
-                                        : "bg-zinc-800/50 border border-white/5 text-zinc-100 rounded-tl-none"
+                                    "flex-1 whitespace-pre-wrap leading-relaxed",
+                                    message.role === 'user' ? "text-white font-bold" : "text-zinc-300"
                                 )}>
                                     {message.role === 'user' ? (
-                                        <div className="whitespace-pre-wrap">{message.content}</div>
+                                        message.content
                                     ) : (
                                         <div className="markdown-body">
                                             <ReactMarkdown
                                                 remarkPlugins={[remarkGfm]}
                                                 components={{
-                                                    table: ({ node, ...props }) => <div className="overflow-x-auto my-2"><table className="w-full border-collapse border border-zinc-700" {...props} /></div>,
-                                                    th: ({ node, ...props }) => <th className="border border-zinc-700 bg-zinc-800/50 p-2 text-left" {...props} />,
-                                                    td: ({ node, ...props }) => <td className="border border-zinc-700 p-2" {...props} />,
-                                                    ul: ({ node, ...props }) => <ul className="list-disc list-inside my-2" {...props} />,
-                                                    ol: ({ node, ...props }) => <ol className="list-decimal list-inside my-2" {...props} />,
-                                                    li: ({ node, ...props }) => <li className="my-1" {...props} />,
-                                                    p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
-                                                    strong: ({ node, ...props }) => <strong className="text-primary font-bold" {...props} />,
+                                                    table: ({ node, ...props }) => <div className="my-2 border border-white/10"><table className="w-full text-xs" {...props} /></div>,
+                                                    thead: ({ node, ...props }) => <thead className="bg-white/5 text-primary/80" {...props} />,
+                                                    th: ({ node, ...props }) => <th className="p-2 text-left border-b border-white/10" {...props} />,
+                                                    td: ({ node, ...props }) => <td className="p-2 border-b border-white/5 border-r last:border-r-0 border-white/5" {...props} />,
+                                                    a: ({ node, ...props }) => <a className="text-cyan-400 underline underline-offset-4 decoration-1 decoration-cyan-400/50 hover:decoration-cyan-400" {...props} />,
+                                                    ul: ({ node, ...props }) => <ul className="pl-0 my-1 space-y-0.5" {...props} />,
+                                                    li: ({ node, ...props }) => <li className="pl-4 relative before:content-['>'] before:absolute before:left-0 before:text-zinc-600" {...props} />,
+                                                    code: ({ node, ...props }) => <code className="text-yellow-500 bg-transparent px-1" {...props} />,
+                                                    strong: ({ node, ...props }) => <strong className="text-white font-bold" {...props} />,
+                                                    h1: ({ node, ...props }) => <span className="block text-lg font-bold text-white mt-4 mb-2 border-b border-white/10 pb-1" {...props} />,
                                                 }}
                                             >
                                                 {message.content}
@@ -246,65 +248,53 @@ export default function ChatInterface() {
 
                 {isLoading && (
                     <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex gap-3 mr-auto"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex gap-3 text-zinc-400 animate-pulse"
                     >
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                            <Bot size={16} className="text-primary" />
-                        </div>
-                        <div className="bg-zinc-800/50 border border-white/5 p-4 rounded-2xl rounded-tl-none flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                            <span className="text-xs text-zinc-400">思考中...</span>
-                        </div>
+                        <span className="text-purple-400 shrink-0 select-none">[SYSTEM_CORE]:</span>
+                        <span>PROCESSING_DATA... <span className="inline-block w-2 h-4 bg-purple-400/50 align-middle"></span></span>
                     </motion.div>
                 )}
 
                 {error && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex flex-col items-center gap-2 p-4"
-                    >
-                        <p className="text-red-400 text-sm">{error}</p>
-                        <button
-                            onClick={handleRetry}
-                            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors text-sm"
-                        >
-                            <RefreshCw size={14} />
-                            重試
-                        </button>
-                    </motion.div>
+                    <div className="text-red-400 flex gap-3">
+                        <span className="shrink-0">[ERROR]:</span>
+                        <span>{error}</span>
+                        <button onClick={handleRetry} className="underline hover:text-white">[RETRY_COMMAND]</button>
+                    </div>
                 )}
 
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="p-4 bg-black/20 border-t border-white/10">
-                <form onSubmit={handleSubmit} className="flex gap-2 relative">
+            {/* Terminal Input Line */}
+            <div className="p-3 bg-black/60 border-t border-white/10 backdrop-blur-md sticky bottom-0 z-20 flex items-center gap-2">
+                <span className="text-green-400 font-bold shrink-0 select-none">root@user:~$</span>
+                <form onSubmit={handleSubmit} className="flex-1 flex relative">
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="我想組一台玩 2077 的電腦，預算 4 萬..."
-                        className="flex-1 bg-zinc-900/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
+                        className="w-full bg-transparent border-none outline-none text-white font-mono placeholder:text-zinc-700 h-6 p-0 focus:ring-0"
+                        placeholder="INPUT_COMMAND..."
+                        autoFocus
+                        autoComplete="off"
                         disabled={isLoading}
                     />
-                    <button
-                        type="submit"
-                        disabled={isLoading || !input.trim()}
-                        className="bg-primary hover:bg-primary/90 text-white p-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                    >
-                        <Send size={18} />
-                    </button>
+                    {/* Blinking Cursor Block */}
+                    {!input && !isLoading && <span className="absolute left-0 top-0 h-full w-2.5 bg-green-500/50 animate-pulse pointer-events-none"></span>}
                 </form>
-                <p className="text-center text-[10px] text-zinc-600 mt-2">
-                    按 Enter 發送
-                </p>
+                <button
+                    type="submit"
+                    onClick={(e) => handleSubmit(e)}
+                    disabled={isLoading || !input.trim()}
+                    className="text-white/20 hover:text-green-400 transition-colors disabled:opacity-0"
+                >
+                    <Send size={16} />
+                </button>
             </div>
-
         </div>
     );
 }
