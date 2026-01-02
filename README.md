@@ -52,13 +52,3 @@ Enter budget and usage. AI returns parts list with specs, prices, compatibility 
 ## Limits
 
 5 requests/minute per IP. Max conversation length: 5000 characters.
-
-## Scripts
-
-```bash
-npm run dev
-npm run build
-npm start
-npm run lint
-npm test
-```
