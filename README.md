@@ -4,20 +4,19 @@ PC building assistant that recommends parts based on budget and usage.
 
 ## Features
 
-- Chat-based recommendations using GPT-4o-mini
+- Chat interface with GPT-4o-mini
 - Budget optimization (85-100% utilization)
-- Multi-purpose configuration balancing
+- Multi-purpose configuration support
 - Compatibility checking
-- Markdown formatted responses
-- Conversation history saved locally
+- Markdown responses
+- Local conversation history
 
-## Tech Stack
+## Tech
 
-Next.js 16, TypeScript, Tailwind CSS 4, OpenAI API, Framer Motion
+Next.js 16, TypeScript, Tailwind CSS 4, OpenAI API, Framer Motion, React Markdown, Recharts
 
 ## Setup
 
-Install dependencies:
 ```bash
 npm install
 ```
@@ -27,45 +26,39 @@ Create `.env.local`:
 OPENAI_API_KEY=your_key_here
 ```
 
-Run dev server:
 ```bash
 npm run dev
 ```
 
-Open http://localhost:3000
-
-## Project Structure
+## Structure
 
 ```
 src/
-├── app/
-│   ├── api/recommend/      # API route
-│   ├── layout.tsx
-│   └── page.tsx
+├── app/api/recommend/    # API route
 ├── components/
-│   └── ChatInterface.tsx
+│   ├── ChatInterface.tsx
+│   ├── ComponentCard.tsx
+│   ├── BuildVisualizer.tsx
+│   └── BuildSummary.tsx
 └── lib/
+    ├── compatibility.ts
     └── utils.ts
 ```
 
 ## Usage
 
-Enter your requirements, for example:
-- "Gaming PC with 50k budget"
-- "Deep learning workstation, 100k budget"
-- "Video editing + gaming, 80k budget"
+Enter budget and usage. AI returns parts list with specs, prices, compatibility checks, and upgrade suggestions.
 
-The AI will recommend a complete parts list with specs, prices, compatibility checks, and upgrade suggestions.
+## Limits
 
-## Rate Limiting
+5 requests/minute per IP. Max conversation length: 5000 characters.
 
-5 requests per minute per IP. Conversation length limit: 5000 characters.
-
-## Commands
+## Scripts
 
 ```bash
-npm run dev      # Development
-npm run build    # Build
-npm start        # Production
-npm run lint     # Lint
+npm run dev
+npm run build
+npm start
+npm run lint
+npm test
 ```
