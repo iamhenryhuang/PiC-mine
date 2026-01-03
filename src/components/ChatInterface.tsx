@@ -15,6 +15,27 @@ interface Message {
     timestamp: number;
 }
 
+const DecoratedDataBlock = () => {
+    const [data, setData] = useState<string[]>([]);
+
+    useEffect(() => {
+        const newData = Array.from({ length: 20 }).map(() =>
+            `${Math.random().toString(16).slice(2)} :: ${Math.random().toString(36).slice(2)}`
+        );
+        setData(newData);
+    }, []);
+
+    if (data.length === 0) return null;
+
+    return (
+        <>
+            {data.map((text, i) => (
+                <div key={i}>{text}</div>
+            ))}
+        </>
+    );
+};
+
 export default function ChatInterface() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
@@ -237,9 +258,7 @@ export default function ChatInterface() {
                 <div className="flex-1 overflow-hidden relative opacity-50">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent z-10" />
                     <div className="text-[10px] leading-3 text-green-500/50 break-all whitespace-pre-wrap font-mono data-scroll-container">
-                        {Array.from({ length: 20 }).map((_, i) => (
-                            <div key={i}>{Math.random().toString(16).slice(2)} :: {Math.random().toString(36).slice(2)}</div>
-                        ))}
+                        <DecoratedDataBlock />
                     </div>
                 </div>
 

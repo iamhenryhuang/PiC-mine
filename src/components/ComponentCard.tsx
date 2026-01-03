@@ -21,6 +21,17 @@ const getIcon = (type: string) => {
     return <HelpCircle className="w-6 h-6 text-zinc-400" />;
 };
 
+const GeneratedId = () => {
+    const [id, setId] = React.useState("");
+
+    React.useEffect(() => {
+        setId(`ID::${Math.random().toString(36).substr(2, 6).toUpperCase()} // SEQ_0${Math.floor(Math.random() * 9)}`);
+    }, []);
+
+    if (!id) return null;
+    return <>{id}</>;
+};
+
 const ComponentCard: React.FC<ComponentCardProps> = ({ type, name, price, reason }) => {
     return (
         <div className="group relative p-5 rounded-sm bg-white/60 dark:bg-black/40 border border-primary/20 transition-all duration-300 overflow-hidden hover:border-primary/60 hover:shadow-[0_0_15px_rgba(0,180,255,0.15)] dark:hover:shadow-[0_0_15px_rgba(0,255,255,0.15)] flex flex-col h-full">
@@ -72,7 +83,7 @@ const ComponentCard: React.FC<ComponentCardProps> = ({ type, name, price, reason
 
             {/* Decorative footer data */}
             <div className="absolute bottom-1 right-2 text-[6px] font-mono text-primary/40 dark:text-primary/20 select-none tracking-widest group-hover:text-primary/60 dark:group-hover:text-primary/40 transition-colors">
-                ID::{Math.random().toString(36).substr(2, 6).toUpperCase()} // SEQ_0{Math.floor(Math.random() * 9)}
+                <GeneratedId />
             </div>
         </div>
     );
