@@ -33,6 +33,19 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Messages array is required' }, { status: 400 });
         }
 
+        // Strict Input Validation per message
+        for (const msg of messages) {
+            if (typeof msg !== 'object' || msg === null) {
+                return NextResponse.json({ error: 'Invalid message format' }, { status: 400 });
+            }
+            if (!['user', 'assistant', 'system'].includes(msg.role)) {
+                return NextResponse.json({ error: 'Invalid message role' }, { status: 400 });
+            }
+            if (typeof msg.content !== 'string' || msg.content.trim().length === 0) {
+                return NextResponse.json({ error: 'Message content must be a non-empty string' }, { status: 400 });
+            }
+        }
+
         // 2. Input Validation (Cost Control)
         // Check total length of all user messages roughly
         const totalLength = messages.reduce((acc: number, msg: any) => acc + (msg.content?.length || 0), 0);

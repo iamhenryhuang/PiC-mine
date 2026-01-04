@@ -325,6 +325,12 @@ export default function ChatInterface() {
                                             ) : (
                                                 <div className="markdown-body">
                                                     <ReactMarkdown
+                                                        urlTransform={(url) => {
+                                                            if (url.startsWith('http://') || url.startsWith('https://')) {
+                                                                return url;
+                                                            }
+                                                            return '';
+                                                        }}
                                                         remarkPlugins={[remarkGfm]}
                                                         components={{
                                                             table: ({ node: _node, ...props }) => <div className="my-4 border border-primary/30 rounded-sm overflow-hidden"><table className="w-full text-xs" {...props} /></div>,

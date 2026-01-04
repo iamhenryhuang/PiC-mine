@@ -57,6 +57,32 @@ describe('Security & Rate Limiting API Tests', () => {
         expect(data.error).toBe('Conversation is too long. Please start a new chat.');
     });
 
+    it('should return 400 if message role is invalid', async () => {
+        const req = new Request('http://localhost/api/recommend', {
+            method: 'POST',
+            body: JSON.stringify({
+                messages: [{ role: 'hacker', content: 'hello' }],
+            }),
+        });
+        const res = await POST(req);
+        expect(res.status).toBe(400);
+        const data = await res.json();
+        expect(data.error).toBe('Invalid message role');
+    });
+
+    it('should return 400 if message content is empty or invalid', async () => {
+        const req = new Request('http://localhost/api/recommend', {
+            method: 'POST',
+            body: JSON.stringify({
+                messages: [{ role: 'user', content: '' }],
+            }),
+        });
+        const res = await POST(req);
+        expect(res.status).toBe(400);
+        const data = await res.json();
+        expect(data.error).toBe('Message content must be a non-empty string');
+    });
+
     it('should enforce rate limiting', async () => {
         const ip = '127.0.0.1';
         // Mock headers to simulate IP
