@@ -6,6 +6,11 @@ import { useTheme } from "next-themes"
 
 export function ThemeToggle() {
     const { setTheme, theme } = useTheme()
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
 
     return (
         <button
@@ -23,7 +28,7 @@ export function ThemeToggle() {
             </div>
 
             <span className="hidden md:block text-[10px] font-mono font-bold tracking-widest text-muted-foreground group-hover:text-primary uppercase">
-                {theme === 'dark' ? 'Night_Ops' : 'Day_Ops'}
+                {mounted ? (theme === 'dark' ? 'Night_Ops' : 'Day_Ops') : 'Loading...'}
             </span>
         </button>
     )
