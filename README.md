@@ -34,15 +34,15 @@ npm run dev
 
 ```
 src/
-├── app/api/recommend/    # API route
+├── app/api/          # API 路由 (Recommend, Scrape)
 ├── components/
-│   ├── ChatInterface.tsx
-│   ├── ComponentCard.tsx
-│   ├── BuildVisualizer.tsx
-│   └── BuildSummary.tsx
+│   ├── chat/         # 對話介面與監測組件
+│   ├── pc-build/     # 零件呈現與分析組件
+│   └── ui/           # 通用 UI (Theme, Layout)
 └── lib/
-    ├── compatibility.ts
-    └── utils.ts
+    ├── db.ts         # 本地產品資料存取
+    ├── scraper.ts    # 原價屋網頁爬蟲
+    └── utils.ts      # 共用工具函式 (cn, etc.)
 ```
 
 ## Usage

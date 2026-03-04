@@ -1,5 +1,5 @@
-import ChatInterface from '@/components/ChatInterface';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import ChatInterface from '@/components/chat/ChatInterface';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Cpu, Zap, ShieldCheck } from 'lucide-react';
 
 export default function Home() {
@@ -47,10 +47,6 @@ export default function Home() {
             <span className="text-[10px] text-primary/70 font-mono hidden md:block">ONLINE</span>
           </div>
         </div>
-      </div>
-
-      <div className="absolute top-4 right-4 z-50">
-        <ThemeToggle />
       </div>
 
       <div className="absolute top-4 right-4 z-50">
